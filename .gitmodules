@@ -1,0 +1,12 @@
+[submodule "lain"]
+	path = lain
+	url = git://github.com/lcpz/lain.git
+	branch = master
+[submodule "freedesktop"]
+	path = freedesktop
+	url = git://github.com/lcpz/awesome-freedesktop.git
+	branch = master
+[submodule "radical"]
+	path = radical
+	url = git@github.com:Elv13/radical.git
+	branch = master
