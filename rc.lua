@@ -1,4 +1,3 @@
--- vim: ft=lua
 --[[
 
      Awesome WM configuration template
@@ -112,8 +111,14 @@ awful.spawn.with_shell(
 
 -- }}}
 
-lju = {}
+lu = {
+  fn     = {},
+  mod    = {},
+  quakes = {},
+}
 
+-- Custom quake dropdown windows that are assigned to W, S, and D respectively.
+-- altkey-_key_ displays the window and altkey-shift-_key_ hides
 local quakes = {
   browser = lain.util.quake({
     app      = "google-chrome",
@@ -154,11 +159,27 @@ local quakes = {
     end,
   })
 }
+lu.quakes = quakes
 
-lju.quakes = quakes
+lu.fn.make_show_quake = function(quake_type)
+  return function ()
+    lu.quakes[quake_type].visible = true
+    lu.quakes[quake_type]:display()
+  end
+end
 
-local mod_without_ctrl = { modkey,            }
-local mod_with_ctrl    = { modkey, "Control", }
+lu.fn.make_hide_quake = function(quake_type)
+  return function ()
+    lu.quakes[quake_type].visible = false
+    lu.quakes[quake_type]:display()
+  end
+end
+
+local my_modkeys = {
+  w_ctrl    = { altkey, "Control", },
+  wout_ctrl = { altkey,            },
+}
+lu.mod = my_modkeys
 
 -- We use this function later on to switch opacity on client windows. Uses a
 -- closure to keep track of the notification id.
@@ -486,44 +507,29 @@ globalkeys = my_table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Dropdown applications
-    awful.key(mod_without_ctrl, "w",
-        function ()
-            quakes.browser.visible = true
-            quakes.browser:display()
-        end,
+    awful.key(lu.mod.wout_ctrl, "w",
+        lu.fn.make_show_quake('browser'),
         {description = "dropdown browser", group = "launcher"}),
 
-    awful.key(mod_with_ctrl, "w",
-        function ()
-            quakes.browser:toggle()
-        end,
+    awful.key(lu.mod.w_ctrl, "w",
+        lu.fn.make_hide_quake('browser'),
         {description = "toggle dropdown browser", group = "launcher"}),
 
-    awful.key(mod_without_ctrl, "s",
-        function ()
-            quakes.terminal.visible = true
-            quakes.terminal:display()
-        end,
+    awful.key(lu.mod.wout_ctrl, "s",
+        lu.fn.make_show_quake('terminal'),
         {description = "dropdown st terminal", group = "launcher"}),
 
-    awful.key(mod_with_ctrl, "s",
-        function ()
-            quakes.terminal:toggle()
-        end,
+    awful.key(lu.mod.w_ctrl, "s",
+        lu.fn.make_hide_quake('terminal'),
         {description = "toggle dropdown st terminal", group = "launcher"}),
 
-    awful.key(mod_without_ctrl, "d",
-        function ()
-            quakes.docs.visible = true
-            quakes.docs:display()
-        end,
+    awful.key(lu.mod.wout_ctrl, "d",
+        lu.fn.make_show_quake('docs'),
         {description = "dropdown documentation", group = "launcher"}),
 
     -- Dropdown applications
-    awful.key(mod_with_ctrl, "d",
-        function ()
-            quakes.docs:toggle()
-        end,
+    awful.key(lu.mod.w_ctrl, "d",
+        lu.fn.make_hide_quake('docs'),
         {description = "toggle dropdown documentation", group = "launcher"}),
 
     -- Widgets popups
@@ -531,7 +537,7 @@ globalkeys = my_table.join(
               --{description = "show calendar", group = "widgets"}),
     awful.key({ altkey, "Control", "Shift" }, "h", function () if beautiful.fs then beautiful.fs.show(7) end end,
               {description = "show filesystem", group = "widgets"}),
-    awful.key({ altkey, "Shift" }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end,
+    awful.key({ altkey, "Control", "Shift" }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end,
               {description = "show weather", group = "widgets"}),
 
     -- Brightness
@@ -929,11 +935,6 @@ client.connect_signal("request::titlebars", function(c)
     }
 end)
 
--- Enable sloppy focus, so that focus follows mouse.
---client.connect_signal("mouse::enter", function(c)
-    --c:emit_signal("request::activate", "mouse_enter", {raise = true})
---end)
-
 -- No border for maximized clients
 function border_adjust(c)
     if c.maximized then -- no borders if only 1 client visible
@@ -947,4 +948,5 @@ end
 client.connect_signal("property::maximized", border_adjust)
 client.connect_signal("focus", border_adjust)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
--- }}}
+
+-- vim: ft=lua
