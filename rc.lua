@@ -700,40 +700,7 @@ globalkeys = my_table.join(
                     history_path = awful.util.get_cache_dir() .. "/history_eval"
                   }
               end,
-              {description = "lua execute prompt", group = "awesome"}),
-    -- View tag only.
-    awful.key({ modkey }, "z",
-              function ()
-                    local screen = awful.screen.focused()
-                    local tag = awful.tag.find_by_name("Doc")
-                    if tag then
-                        tag:view_only()
-                    end
-              end,
-              {description = "jump to Doc tag", group = "awesome"}),
-    -- Toggle tag display.
-    awful.key({ altkey }, "z",
-              function ()
-                  local tag = awful.tag.find_by_name("Doc")
-                  if tag then
-                    tag.selected = true
-                    c = tag:clients()[1]
-                    if c then
-                      client.focus = c
-                      c:raise()
-                    end
-                  end
-              end,
-              {description = "focus Doc tag", group = "awesome"}),
-    -- Toggle tag display.
-    awful.key({ altkey, "Control" }, "z",
-              function ()
-                  local tag = awful.tag.find_by_name("Doc")
-                  if tag then
-                    tag.selected = false
-                  end
-              end,
-              {description = "toggle Doc tag", group = "awesome"})
+              {description = "lua execute prompt", group = "awesome"})
 )
 
 clientkeys = my_table.join(
