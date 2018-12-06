@@ -50,6 +50,7 @@ naughty       = require("naughty")
 lain          = require("lain")
 menubar       = require("menubar")
 freedesktop   = require("freedesktop")
+tyrannical    = require("tyrannical")
 hotkeys_popup = require("awful.hotkeys_popup").widget
                       require("awful.hotkeys_popup.keys")
 
@@ -114,72 +115,7 @@ awful.spawn.with_shell(
 lu = {
   fn     = {},
   mod    = {},
-  quakes = {},
 }
-
--- Custom quake dropdown windows that are assigned to W, S, and D respectively.
--- altkey-_key_ displays the window and altkey-shift-_key_ hides
-local quakes = {
-  browser = lain.util.quake({
-    app      = "google-chrome",
-    name     = "google-chrome",
-    argname  = "www.google.com",
-    extra    = "--new-window",
-    horiz    = "center",
-    vert     = "center",
-    height   = q_height_large,
-    width    = q_width_large,
-    settings = function (c)
-      c.above = false
-    end,
-  }),
-
-  terminal = lain.util.quake({
-    app    = terminal,
-    name    = "Quake-"..terminal,
-    argname = "-n %s",
-    horiz  = "center",
-    height = q_height,
-    width  = q_width,
-    settings = function (c)
-      c.above = false
-    end,
-  }),
-
-  docs = lain.util.quake({
-    app    = docs,
-    name    = "Quake-"..docs,
-    argname = "-name %s",
-    horiz  = "center",
-    vert   = "bottom",
-    height = q_height,
-    width  = q_width,
-    settings = function (c)
-      c.above = false
-    end,
-  })
-}
-lu.quakes = quakes
-
-lu.fn.make_show_quake = function(quake_type)
-  return function ()
-    lu.quakes[quake_type].visible = true
-    lu.quakes[quake_type]:display()
-  end
-end
-
-lu.fn.make_hide_quake = function(quake_type)
-  return function ()
-    lu.quakes[quake_type].visible = false
-    lu.quakes[quake_type]:display()
-  end
-end
-
-local my_modkeys = {
-  w_ctrl    = { altkey, "Control", },
-  wout_ctrl = { altkey,            },
-}
-lu.mod = my_modkeys
 
 -- We use this function later on to switch opacity on client windows. Uses a
 -- closure to keep track of the notification id.
@@ -331,6 +267,95 @@ screen.connect_signal("property::geometry", function(s)
         gears.wallpaper.maximized(wallpaper, s, true)
     end
 end)
+
+tyrannical.tags = {
+    {
+        name        = "Term",                 -- Call the tag "Term"
+        init        = true,                   -- Load the tag on startup
+        exclusive   = true,                   -- Refuse any other type of clients (by classes)
+        screen      = {1,2},                  -- Create this tag on screen 1 and screen 2
+        layout      = awful.layout.suit.floating, -- Use the tile layout
+        instance    = {"dev", "ops"},         -- Accept the following instances. This takes precedence over 'class'
+        exec_once   = {"st"},                 --When the tag is accessed for the first time, execute this command
+        class       = { --Accept the following classes, refuse everything else (because of "exclusive=true")
+            "st", "xterm" , "urxvt" , "aterm","URxvt","XTerm","konsole","terminator","gnome-terminal"
+        }
+    } ,
+    {
+        name        = "Internet",
+        init        = true,
+        exclusive   = true,
+      --icon        = "~net.png",                 -- Use this icon for the tag (uncomment with a real path)
+        screen      = screen.count()>1 and 2 or 1,-- Setup on screen 2 if there is more than 1 screen, else on screen 1
+        layout      = awful.layout.suit.floating,      -- Use the max layout
+        class = {
+            "Opera"         , "Firefox"        , "Rekonq"    , "Dillo"        , "Arora",
+            "Google-chrome" ,  "Chromium"      , "nightly"   , "minefield"     }
+    } ,
+    {
+        name        = "Files",
+        init        = false,
+        exclusive   = true,
+        screen      = 1,
+        layout      = awful.layout.suit.tile,
+        class  = {
+            "Thunar", "Konqueror", "Dolphin", "ark", "Nautilus","emelfm"
+        }
+    } ,
+    {
+        name        = "VirtualBox",
+        init        = false,
+        exclusive   = true,
+        screen      = 1,
+        layout      = awful.layout.suit.floating,
+        class  = {
+            "VirtualBox Manager", "VirtualBox Machine",
+        }
+    } ,
+    {
+        name        = "Doc",
+        init        = true, -- This tag wont be created at startup, but will be when one of the
+                             -- client in the "class" section will start. It will be created on
+                             -- the client startup screen
+        exclusive   = true,
+        layout      = awful.layout.suit.floating,
+        exec_once   = {"zeal"}, --When the tag is accessed for the first time, execute this command
+        class       = {
+            "Assistant"     , "Okular"         , "Evince"    , "EPDFviewer"   , "xpdf",
+            "Xpdf"          , "Zeal"           ,                     }
+    } ,
+}
+
+-- Ignore the tag "exclusive" property for the following clients (matched by classes)
+tyrannical.properties.intrusive = {
+    "ksnapshot"     , "pinentry"       , "gtksu"     , "kcalc"        , "xcalc"               ,
+    "feh"           , "Gradient editor", "About KDE" , "Paste Special", "Background color"    ,
+    "kcolorchooser" , "plasmoidviewer" , "Xephyr"    , "kruler"       , "plasmaengineexplorer",
+    "Xfce4-panel",
+}
+
+-- Ignore the tiled layout for the matching clients
+tyrannical.properties.floating = {
+    "MPlayer"      , "pinentry"        , "ksnapshot"  , "pinentry"     , "gtksu"          ,
+    "xine"         , "feh"             , "kmix"       , "kcalc"        , "xcalc"          ,
+    "yakuake"      , "Select Color$"   , "kruler"     , "kcolorchooser", "Paste Special"  ,
+    "New Form"     , "Insert Picture"  , "kcharselect", "mythfrontend" , "plasmoidviewer"
+}
+
+-- Make the matching clients (by classes) on top of the default layout
+tyrannical.properties.ontop = {
+    "Xephyr"       , "ksnapshot"       , "kruler", "Shutter",
+}
+
+-- Force the matching clients (by classes) to be centered on the screen on init
+tyrannical.properties.placement = {
+    kcalc = awful.placement.centered,
+    st    = awful.placement.top,
+}
+
+tyrannical.settings.block_children_focus_stealing = true --Block popups ()
+tyrannical.settings.group_children = true --Force popups/dialogs to have the same tags as the parent client
+
 -- Create a wibox for each screen and add it
 awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
 -- }}}
@@ -358,7 +383,7 @@ globalkeys = my_table.join(
               {description = "lock screen", group = "hotkeys"}),
 
     -- Hotkeys
-    awful.key({ modkey, "Shift"   }, "s",      hotkeys_popup.show_help,
+    awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description = "show help", group="awesome"}),
     -- Tag browsing
     awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
@@ -505,32 +530,6 @@ globalkeys = my_table.join(
                   end
               end,
               {description = "restore minimized", group = "client"}),
-
-    -- Dropdown applications
-    awful.key(lu.mod.wout_ctrl, "w",
-        lu.fn.make_show_quake('browser'),
-        {description = "dropdown browser", group = "launcher"}),
-
-    awful.key(lu.mod.w_ctrl, "w",
-        lu.fn.make_hide_quake('browser'),
-        {description = "toggle dropdown browser", group = "launcher"}),
-
-    awful.key(lu.mod.wout_ctrl, "s",
-        lu.fn.make_show_quake('terminal'),
-        {description = "dropdown st terminal", group = "launcher"}),
-
-    awful.key(lu.mod.w_ctrl, "s",
-        lu.fn.make_hide_quake('terminal'),
-        {description = "toggle dropdown st terminal", group = "launcher"}),
-
-    awful.key(lu.mod.wout_ctrl, "d",
-        lu.fn.make_show_quake('docs'),
-        {description = "dropdown documentation", group = "launcher"}),
-
-    -- Dropdown applications
-    awful.key(lu.mod.w_ctrl, "d",
-        lu.fn.make_hide_quake('docs'),
-        {description = "toggle dropdown documentation", group = "launcher"}),
 
     -- Widgets popups
     --awful.key({ altkey, }, "c", function () lain.widget.calendar.show(7) end,
@@ -701,7 +700,40 @@ globalkeys = my_table.join(
                     history_path = awful.util.get_cache_dir() .. "/history_eval"
                   }
               end,
-              {description = "lua execute prompt", group = "awesome"})
+              {description = "lua execute prompt", group = "awesome"}),
+    -- View tag only.
+    awful.key({ modkey }, "z",
+              function ()
+                    local screen = awful.screen.focused()
+                    local tag = awful.tag.find_by_name("Doc")
+                    if tag then
+                        tag:view_only()
+                    end
+              end,
+              {description = "jump to Doc tag", group = "awesome"}),
+    -- Toggle tag display.
+    awful.key({ altkey }, "z",
+              function ()
+                  local tag = awful.tag.find_by_name("Doc")
+                  if tag then
+                    tag.selected = true
+                    c = tag:clients()[1]
+                    if c then
+                      client.focus = c
+                      c:raise()
+                    end
+                  end
+              end,
+              {description = "focus Doc tag", group = "awesome"}),
+    -- Toggle tag display.
+    awful.key({ altkey, "Control" }, "z",
+              function ()
+                  local tag = awful.tag.find_by_name("Doc")
+                  if tag then
+                    tag.selected = false
+                  end
+              end,
+              {description = "toggle Doc tag", group = "awesome"})
 )
 
 clientkeys = my_table.join(
@@ -777,12 +809,27 @@ for i = 1, 9 do
                   end,
                   descr_view),
         -- Toggle tag display.
-        awful.key({ modkey, "Control" }, "#" .. i + 9,
+        awful.key({ altkey }, "#" .. i + 9,
                   function ()
                       local screen = awful.screen.focused()
                       local tag = screen.tags[i]
                       if tag then
-                         awful.tag.viewtoggle(tag)
+                        tag.selected = true
+                        c = tag:clients()[1]
+                        if c then
+                          client.focus = c
+                          c:raise()
+                        end
+                      end
+                  end,
+                  descr_toggle),
+        -- Toggle tag display.
+        awful.key({ altkey, "Control" }, "#" .. i + 9,
+                  function ()
+                      local screen = awful.screen.focused()
+                      local tag = screen.tags[i]
+                      if tag then
+                        tag.selected = false
                       end
                   end,
                   descr_toggle),
@@ -852,7 +899,7 @@ awful.rules.rules = {
 
     -- Set Firefox to always map on the first tag on screen 1.
     --{ rule = { class = "Google-chrome" },
-      --properties = { screen = 1, tag = awful.util.tagnames[1] } },
+      --properties = { screen = 1, tag = awful.util.tagnames[1], floating = true } },
 
     { rule_any = { role = { "pop-up" }, class = { "Gnome-calculator", "Shutter" } },
         properties = { floating = true, opacity = 0.95 } },

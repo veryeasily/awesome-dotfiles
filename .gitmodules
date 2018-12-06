@@ -10,3 +10,6 @@
 	path = radical
 	url = git@github.com:Elv13/radical.git
 	branch = master
+[submodule "tyrannical"]
+	path = tyrannical
+	url = https://github.com/Elv13/tyrannical.git

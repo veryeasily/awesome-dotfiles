@@ -241,10 +241,6 @@ menu:add_item {text="Sub Menu",sub_menu = function()
     return smenu
 end}
 
--- To add the menu to a widget:
-local mytextbox = wibox.widget.textbox('Search')
-mytextbox:set_menu(menu, "button::pressed", 3) -- 3 = right mouse button, 1 = left mouse button
-
 -- To add a key binding on a "box" menu (and every other types)
 menu:add_key_binding({"Mod4", "Control", "Shift"},",")
 
@@ -268,9 +264,6 @@ function theme.at_screen_connect(s)
         wallpaper = wallpaper(s)
     end
     gears.wallpaper.maximized(wallpaper, s, true)
-
-    -- Tags
-    awful.tag(awful.util.tagnames, s, awful.layout.layouts)
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -310,15 +303,14 @@ function theme.at_screen_connect(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            wibox.widget.systray(),
             spr,
             theme.mpd.widget,
             --theme.mail.widget,
             --theme.fs.widget,
             volumewidget,
             wibox.container.background(wibox.container.margin(wibox.widget { baticon, bat.widget, layout = wibox.layout.align.horizontal }, 3, 3), bg_normal),
+            wibox.widget.systray(),
             mytextclock,
-            mytextbox
         },
     }
 end
