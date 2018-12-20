@@ -92,6 +92,7 @@ end
 
 run_once({
   "urxvtd",
+  "dropbox start -i",
   "syndaemon -i 1 -d  -t -K",
   "nm-applet",
   "volti",
