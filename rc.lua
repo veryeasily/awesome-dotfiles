@@ -14,7 +14,7 @@ local themes = {
 local chosen_theme   = themes[1]
 local modkey         = "Mod4"
 local altkey         = "Mod1"
-local terminal       = "st"
+local terminal       = "alacritty"
 local editor         = os.getenv("EDITOR") or "vim"
 local gui_editor     = "gvim"
 local browser        = "google-chrome"
@@ -277,9 +277,9 @@ tyrannical.tags = {
         screen      = {1,2},                  -- Create this tag on screen 1 and screen 2
         layout      = awful.layout.suit.floating, -- Use the tile layout
         instance    = {"dev", "ops"},         -- Accept the following instances. This takes precedence over 'class'
-        exec_once   = {"st"},                 --When the tag is accessed for the first time, execute this command
+        exec_once   = {"alacritty"},          -- When the tag is accessed for the first time, execute this command
         class       = { --Accept the following classes, refuse everything else (because of "exclusive=true")
-            "st", "xterm" , "urxvt" , "aterm","URxvt","XTerm","konsole","terminator","gnome-terminal"
+            "st", "xterm" , "urxvt" , "alacritty", "aterm","URxvt","XTerm","konsole","terminator","gnome-terminal"
         }
     } ,
     {
@@ -582,6 +582,7 @@ globalkeys = my_table.join(
     awful.key({ }, "XF86AudioMute",
         function ()
             os.execute(string.format("amixer -q set %s toggle", beautiful.volume.togglechannel or beautiful.volume.channel))
+            os.execute("amixer -q set Speaker unmute && amixer -q set Headphone unmute")
             local command = string.format("amixer get %s", beautiful.volume.channel)
             awful.spawn.with_line_callback(command .. " | tail -n 1", {
                 stdout = function (line) 
