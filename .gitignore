@@ -1,3 +1,7 @@
 rc.lua~
 rc.lua.test
 *.bak
+/luarocks
+/lua
+/lua_modules
+/.luarocks
